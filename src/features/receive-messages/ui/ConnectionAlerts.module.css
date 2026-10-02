@@ -1,0 +1,45 @@
+.fatal {
+  margin: 0 12px 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-m);
+  background: var(--danger-bg);
+  color: var(--text-negative);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.fatal p {
+  margin: 0 0 8px;
+}
+
+.fatal button {
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--text-negative);
+  color: #fff;
+  font-weight: 600;
+}
+
+.warning {
+  margin: 0 12px 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-m);
+  background: #ffd60a1f;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.warning p {
+  margin: 0;
+}
+
+.warning p + p {
+  margin-top: 6px;
+}
+
+.warning a {
+  color: var(--accent);
+}

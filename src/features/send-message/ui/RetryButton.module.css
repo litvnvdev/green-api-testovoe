@@ -1,0 +1,9 @@
+.retry {
+  margin-top: 4px;
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  color: var(--text-negative);
+  font-size: 12px;
+  text-decoration: underline;
+}
