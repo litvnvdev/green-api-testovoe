@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useChat } from '../context/ChatContext';
+import { useInstanceWarnings } from '../hooks/useInstanceWarnings';
 import type { PollingStatus } from '../hooks/usePolling';
 import { formatListDate } from '../utils/format';
 import { formatChatId } from '../utils/phone';
@@ -23,6 +24,7 @@ function statusText(status: PollingStatus): string {
 export function Sidebar() {
   const { state, polling, logout, selectChat } = useChat();
   const [creating, setCreating] = useState(false);
+  const warnings = useInstanceWarnings(state.credentials);
   const { chats, messages } = state.data;
 
   // Последнее сообщение каждого чата; сортировка — по последней активности.
@@ -75,6 +77,21 @@ export function Sidebar() {
           <button type="button" onClick={logout}>
             Войти заново
           </button>
+        </div>
+      )}
+
+      {warnings.length > 0 && (
+        <div className={styles.warning} role="alert">
+          {warnings.map((warning) => (
+            <p key={warning}>{warning}</p>
+          ))}
+          <p>
+            Исправьте в{' '}
+            <a href="https://console.green-api.com" target="_blank" rel="noreferrer">
+              личном кабинете
+            </a>{' '}
+            → инстанс → «Настройки». Изменения применяются в течение нескольких минут.
+          </p>
         </div>
       )}
 

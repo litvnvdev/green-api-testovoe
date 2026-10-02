@@ -15,6 +15,14 @@ export interface GetStateInstanceResponse {
   stateInstance: InstanceState | string;
 }
 
+/** Часть ответа getSettings, которая влияет на получение сообщений. */
+export interface InstanceSettings {
+  webhookUrl: string;
+  incomingWebhook: 'yes' | 'no' | string;
+  outgoingMessageWebhook?: 'yes' | 'no' | string;
+  outgoingAPIMessageWebhook?: 'yes' | 'no' | string;
+}
+
 export interface SendMessageRequest {
   chatId: string;
   message: string;
@@ -55,10 +63,13 @@ export interface TextMessageData {
   textMessageData: { textMessage: string };
 }
 
-/** Текст со ссылкой/превью — так WhatsApp часто присылает сообщения с телефона. */
+/**
+ * extendedTextMessage — текст со ссылкой/превью (так WhatsApp часто присылает сообщения с телефона).
+ * quotedMessage — ответ на конкретное сообщение («Ответить»), текст лежит там же.
+ */
 export interface ExtendedTextMessageData {
-  typeMessage: 'extendedTextMessage';
-  extendedTextMessageData: { text: string };
+  typeMessage: 'extendedTextMessage' | 'quotedMessage';
+  extendedTextMessageData: { text: string; stanzaId?: string };
 }
 
 /** Любой другой тип (картинка, стикер, реакция...) — нам не интересен. */

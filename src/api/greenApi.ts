@@ -2,6 +2,7 @@ import type {
   Credentials,
   DeleteNotificationResponse,
   GetStateInstanceResponse,
+  InstanceSettings,
   Notification,
   SendMessageResponse,
 } from './types';
@@ -87,6 +88,10 @@ export function getStateInstance(
   signal?: AbortSignal,
 ): Promise<GetStateInstanceResponse> {
   return request(buildUrl(creds, 'getStateInstance'), { method: 'GET', signal });
+}
+
+export function getSettings(creds: Credentials, signal?: AbortSignal): Promise<InstanceSettings> {
+  return request(buildUrl(creds, 'getSettings'), { method: 'GET', signal });
 }
 
 export function sendMessage(

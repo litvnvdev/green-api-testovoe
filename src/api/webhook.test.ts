@@ -46,6 +46,18 @@ describe('parseWebhook', () => {
     expect(parseWebhook(body)?.message.text).toBe('https://green-api.com');
   });
 
+  it('разбирает ответ на сообщение (quotedMessage)', () => {
+    const body: WebhookBody = {
+      ...base,
+      typeWebhook: 'incomingMessageReceived',
+      messageData: {
+        typeMessage: 'quotedMessage',
+        extendedTextMessageData: { text: 'Отвечаю на это', stanzaId: 'QUOTED1' },
+      },
+    };
+    expect(parseWebhook(body)?.message.text).toBe('Отвечаю на это');
+  });
+
   it('исходящие с телефона и из API помечаются как свои', () => {
     for (const typeWebhook of ['outgoingMessageReceived', 'outgoingAPIMessageReceived'] as const) {
       const body: WebhookBody = {
