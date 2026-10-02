@@ -1,14 +1,7 @@
-import type { TextMessageEvent } from '@/shared/api';
+import type { z } from 'zod';
+import type { chatMessageSchema, messageStatusSchema } from './schema';
 
 export type { MessageDirection } from '@/shared/api';
 
-/** sending — ждём ответа sendMessage; failed — отправка не удалась. */
-export type MessageStatus = 'sending' | 'sent' | 'failed';
-
-/**
- * Сообщение в истории чата: событие из вебхука без служебного имени отправителя плюс статус доставки.
- * id — idMessage из GREEN-API, либо временный local-* до ответа sendMessage.
- */
-export type ChatMessage = Omit<TextMessageEvent, 'senderName'> & {
-  status: MessageStatus;
-};
+export type MessageStatus = z.infer<typeof messageStatusSchema>;
+export type ChatMessage = z.output<typeof chatMessageSchema>;

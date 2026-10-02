@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const MIN_PHONE_DIGITS = 10;
 export const MAX_PHONE_DIGITS = 15;
 
@@ -10,20 +12,27 @@ export function normalizePhone(input: string): string {
   return digits;
 }
 
+/** Номер в любом виде → только цифры с кодом страны. На выходе схемы — нормализованная строка. */
+export const phoneSchema = z
+  .string()
+  .trim()
+  .min(1, 'Введите номер телефона.')
+  .transform(normalizePhone)
+  .pipe(
+    z
+      .string()
+      .regex(
+        new RegExp(String.raw`^\d{${MIN_PHONE_DIGITS},${MAX_PHONE_DIGITS}}$`),
+        `Номер должен содержать от ${MIN_PHONE_DIGITS} до ${MAX_PHONE_DIGITS} цифр с кодом страны.`,
+      ),
+  );
+
 export type PhoneValidation = { ok: true; digits: string } | { ok: false; error: string };
 
 export function validatePhone(input: string): PhoneValidation {
-  const digits = normalizePhone(input);
-  if (digits.length === 0) {
-    return { ok: false, error: 'Введите номер телефона.' };
-  }
-  if (digits.length < MIN_PHONE_DIGITS || digits.length > MAX_PHONE_DIGITS) {
-    return {
-      ok: false,
-      error: `Номер должен содержать от ${MIN_PHONE_DIGITS} до ${MAX_PHONE_DIGITS} цифр с кодом страны.`,
-    };
-  }
-  return { ok: true, digits };
+  const result = phoneSchema.safeParse(input);
+  if (result.success) return { ok: true, digits: result.data };
+  return { ok: false, error: result.error.issues[0]?.message ?? 'Неверный номер.' };
 }
 
 export function toChatId(digits: string): string {

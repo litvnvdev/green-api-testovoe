@@ -3,13 +3,15 @@
  * (приватный режим, переполнение квоты, запрет cookies), поэтому всё в try/catch:
  * приложение должно работать и без сохранения.
  */
+import type { z } from 'zod';
 
-export function readJson<T>(key: string, isValid: (value: unknown) => value is T): T | null {
+/** Читает и валидирует значение по схеме; повреждённые или устаревшие данные дают null. */
+export function readJson<S extends z.ZodType>(key: string, schema: S): z.output<S> | null {
   try {
     const raw = window.localStorage.getItem(key);
     if (raw === null) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return isValid(parsed) ? parsed : null;
+    const parsed = schema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }

@@ -1,118 +1,30 @@
-/** Данные инстанса GREEN-API, которые вводит пользователь. */
-export interface Credentials {
-  idInstance: string;
-  apiTokenInstance: string;
-  /** Хост API инстанса, например https://7103.api.greenapi.com (виден в личном кабинете). */
-  apiUrl: string;
-}
+import type { z } from 'zod';
+import type {
+  credentialsSchema,
+  getStateInstanceResponseSchema,
+  instanceSettingsSchema,
+  instanceStateSchema,
+  messageDirectionSchema,
+  notificationSchema,
+  sendMessageResponseSchema,
+  textMessageEventSchema,
+  webhookBodySchema,
+} from './schemas';
 
-// ---------- Ответы REST-методов ----------
+// Все типы выводятся из Zod-схем: валидация и типы не расходятся.
 
-export type InstanceState =
-  'authorized' | 'notAuthorized' | 'blocked' | 'sleepMode' | 'starting' | 'yellowCard';
+/** Креды после валидации (обрезанные пробелы, apiUrl без завершающего слэша). */
+export type Credentials = z.output<typeof credentialsSchema>;
+/** То, что вводит пользователь в форму, до валидации. */
+export type CredentialsInput = z.input<typeof credentialsSchema>;
 
-export interface GetStateInstanceResponse {
-  stateInstance: InstanceState | string;
-}
+export type InstanceState = z.infer<typeof instanceStateSchema>;
+export type GetStateInstanceResponse = z.infer<typeof getStateInstanceResponseSchema>;
+export type InstanceSettings = z.output<typeof instanceSettingsSchema>;
+export type SendMessageResponse = z.infer<typeof sendMessageResponseSchema>;
 
-/** Часть ответа getSettings, которая влияет на получение сообщений. */
-export interface InstanceSettings {
-  webhookUrl: string;
-  incomingWebhook: 'yes' | 'no' | string;
-  outgoingMessageWebhook?: 'yes' | 'no' | string;
-  outgoingAPIMessageWebhook?: 'yes' | 'no' | string;
-}
+export type WebhookBody = z.infer<typeof webhookBodySchema>;
+export type Notification = NonNullable<z.infer<typeof notificationSchema>>;
 
-export interface SendMessageRequest {
-  chatId: string;
-  message: string;
-}
-
-export interface SendMessageResponse {
-  idMessage: string;
-}
-
-/** receiveNotification возвращает null, если очередь пуста. */
-export interface Notification {
-  receiptId: number;
-  body: WebhookBody;
-}
-
-export interface DeleteNotificationResponse {
-  result: boolean;
-}
-
-// ---------- Вебхуки ----------
-
-export interface InstanceData {
-  idInstance: number;
-  wid: string;
-  typeInstance: string;
-}
-
-export interface SenderData {
-  chatId: string;
-  sender: string;
-  chatName?: string;
-  senderName?: string;
-  senderContactName?: string;
-}
-
-export interface TextMessageData {
-  typeMessage: 'textMessage';
-  textMessageData: { textMessage: string };
-}
-
-/**
- * extendedTextMessage — текст со ссылкой/превью (так WhatsApp часто присылает сообщения с телефона).
- * quotedMessage — ответ на конкретное сообщение («Ответить»), текст лежит там же.
- */
-export interface ExtendedTextMessageData {
-  typeMessage: 'extendedTextMessage' | 'quotedMessage';
-  extendedTextMessageData: { text: string; stanzaId?: string };
-}
-
-/** Любой другой тип (картинка, стикер, реакция...) — нам не интересен. */
-export interface OtherMessageData {
-  typeMessage: string;
-}
-
-export type MessageData = TextMessageData | ExtendedTextMessageData | OtherMessageData;
-
-export type MessageWebhookType =
-  'incomingMessageReceived' | 'outgoingMessageReceived' | 'outgoingAPIMessageReceived';
-
-export interface MessageWebhook {
-  typeWebhook: MessageWebhookType;
-  instanceData: InstanceData;
-  timestamp: number;
-  idMessage: string;
-  senderData: SenderData;
-  messageData: MessageData;
-}
-
-/** Статусы, смена состояния инстанса и т.п. — игнорируем, но удаляем из очереди. */
-export interface OtherWebhook {
-  typeWebhook: string;
-  [key: string]: unknown;
-}
-
-export type WebhookBody = MessageWebhook | OtherWebhook;
-
-// ---------- Результат разбора вебхука ----------
-
-/** in — пришло от собеседника, out — отправлено с этого аккаунта (из API или с телефона). */
-export type MessageDirection = 'in' | 'out';
-
-/** Текстовое сообщение, извлечённое из вебхука. Основа для доменного типа сообщения. */
-export interface TextMessageEvent {
-  /** idMessage из WhatsApp. */
-  id: string;
-  chatId: string;
-  text: string;
-  /** Unix-время в миллисекундах. */
-  timestamp: number;
-  direction: MessageDirection;
-  /** Имя собеседника, если WhatsApp его прислал (только для входящих). */
-  senderName?: string;
-}
+export type MessageDirection = z.infer<typeof messageDirectionSchema>;
+export type TextMessageEvent = z.infer<typeof textMessageEventSchema>;

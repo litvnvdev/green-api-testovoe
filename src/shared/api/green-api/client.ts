@@ -1,11 +1,12 @@
-import type {
-  Credentials,
-  DeleteNotificationResponse,
-  GetStateInstanceResponse,
-  InstanceSettings,
-  Notification,
-  SendMessageResponse,
-} from './types';
+import type { z } from 'zod';
+import {
+  deleteNotificationResponseSchema,
+  getStateInstanceResponseSchema,
+  instanceSettingsSchema,
+  notificationSchema,
+  sendMessageResponseSchema,
+} from './schemas';
+import type { Credentials } from './types';
 
 export const DEFAULT_API_URL = 'https://api.green-api.com';
 
@@ -59,7 +60,12 @@ function buildUrl(creds: Credentials, method: string, suffix = ''): string {
   return `${base}/waInstance${id}/${method}/${token}${suffix}`;
 }
 
-async function request<T>(url: string, init: RequestInit): Promise<T> {
+/** Запрос с проверкой ответа по Zod-схеме: несовпадение формата — понятная ошибка, а не падение в UI. */
+async function request<S extends z.ZodType>(
+  url: string,
+  init: RequestInit,
+  schema: S,
+): Promise<z.output<S>> {
   let response: Response;
   try {
     response = await fetch(url, init);
@@ -73,25 +79,36 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
 
   if (!response.ok) throw errorFromStatus(response.status);
 
-  // receiveNotification при пустой очереди отдаёт тело "null".
+  // receiveNotification при пустой очереди отдаёт тело "null" (или пустое).
   const text = await response.text();
-  if (text.trim() === '') return null as T;
+  let json: unknown;
   try {
-    return JSON.parse(text) as T;
+    json = text.trim() === '' ? null : JSON.parse(text);
   } catch {
     throw new GreenApiError('server', 'GREEN-API вернул неожиданный ответ.', response.status);
   }
+
+  const parsed = schema.safeParse(json);
+  if (!parsed.success) {
+    throw new GreenApiError(
+      'server',
+      'GREEN-API вернул ответ в неожиданном формате.',
+      response.status,
+    );
+  }
+  return parsed.data;
 }
 
-export function getStateInstance(
-  creds: Credentials,
-  signal?: AbortSignal,
-): Promise<GetStateInstanceResponse> {
-  return request(buildUrl(creds, 'getStateInstance'), { method: 'GET', signal });
+export function getStateInstance(creds: Credentials, signal?: AbortSignal) {
+  return request(
+    buildUrl(creds, 'getStateInstance'),
+    { method: 'GET', signal },
+    getStateInstanceResponseSchema,
+  );
 }
 
-export function getSettings(creds: Credentials, signal?: AbortSignal): Promise<InstanceSettings> {
-  return request(buildUrl(creds, 'getSettings'), { method: 'GET', signal });
+export function getSettings(creds: Credentials, signal?: AbortSignal) {
+  return request(buildUrl(creds, 'getSettings'), { method: 'GET', signal }, instanceSettingsSchema);
 }
 
 export function sendMessage(
@@ -99,34 +116,32 @@ export function sendMessage(
   chatId: string,
   message: string,
   signal?: AbortSignal,
-): Promise<SendMessageResponse> {
-  return request(buildUrl(creds, 'sendMessage'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chatId, message }),
-    signal,
-  });
+) {
+  return request(
+    buildUrl(creds, 'sendMessage'),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, message }),
+      signal,
+    },
+    sendMessageResponseSchema,
+  );
 }
 
 /** Long polling: сервер держит запрос до receiveTimeout секунд, если очередь пуста. */
-export function receiveNotification(
-  creds: Credentials,
-  signal?: AbortSignal,
-  receiveTimeout = 5,
-): Promise<Notification | null> {
-  return request(buildUrl(creds, 'receiveNotification', `?receiveTimeout=${receiveTimeout}`), {
-    method: 'GET',
-    signal,
-  });
+export function receiveNotification(creds: Credentials, signal?: AbortSignal, receiveTimeout = 5) {
+  return request(
+    buildUrl(creds, 'receiveNotification', `?receiveTimeout=${receiveTimeout}`),
+    { method: 'GET', signal },
+    notificationSchema,
+  );
 }
 
-export function deleteNotification(
-  creds: Credentials,
-  receiptId: number,
-  signal?: AbortSignal,
-): Promise<DeleteNotificationResponse> {
-  return request(buildUrl(creds, 'deleteNotification', `/${receiptId}`), {
-    method: 'DELETE',
-    signal,
-  });
+export function deleteNotification(creds: Credentials, receiptId: number, signal?: AbortSignal) {
+  return request(
+    buildUrl(creds, 'deleteNotification', `/${receiptId}`),
+    { method: 'DELETE', signal },
+    deleteNotificationResponseSchema,
+  );
 }
