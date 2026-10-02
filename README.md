@@ -1,32 +1,118 @@
-# React + TypeScript + Vite
+# WhatsApp-чат на GREEN-API
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Минимальный веб-чат для отправки и получения текстовых сообщений WhatsApp через [GREEN-API](https://green-api.com).
+Внешний вид по мотивам [web.max.ru](https://web.max.ru): две колонки, слева список чатов, справа переписка.
 
-Currently, two official plugins are available:
+**Демо:** https://litvnvdev.github.io/green-api-testovoe/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Вход                                | Чат                               | Мобильная версия                          |
+| ----------------------------------- | --------------------------------- | ----------------------------------------- |
+| ![Вход](docs/screenshots/login.jpg) | ![Чат](docs/screenshots/chat.jpg) | ![Мобильная](docs/screenshots/mobile.jpg) |
 
-## React Compiler
+## Возможности
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Вход по `idInstance` и `apiTokenInstance`. Перед сохранением вызывается `getStateInstance`: если инстанс не привязан к WhatsApp или спит, выводится понятная ошибка.
+- Создание чата по номеру телефона в любом формате (`+7 900 123-45-67`, `8 900...`).
+- Отправка текста (`sendMessage`): `Enter` отправляет, `Shift+Enter` переносит строку, пустое сообщение не отправляется.
+- Получение входящих через HTTP API (`receiveNotification` / `deleteNotification`), ответ появляется через несколько секунд без перезагрузки.
+- Сообщения, отправленные с телефона, тоже появляются в чате как свои.
+- Сессия, список чатов и история сохраняются в `localStorage` и переживают перезагрузку. «Выйти» удаляет креды.
+- Статусы «отправляется / отправлено / не отправлено» и повторная отправка.
+- Адаптивная вёрстка от 360 px, тёмная и светлая тема по настройке системы.
 
-## Expanding the Oxlint configuration
+## Стек
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Vite, React 19, TypeScript (strict), CSS Modules, Context + `useReducer`, нативный `fetch`, `localStorage`, ESLint + Prettier, Vitest.
+Бэкенда нет: браузер обращается к GREEN-API напрямую (CORS у GREEN-API открыт).
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Локальный запуск
+
+Нужен Node.js 20.19+ или 22.12+.
+
+```bash
+git clone https://github.com/litvnvdev/green-api-testovoe.git
+cd green-api-testovoe
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Откройте http://localhost:5173 и введите данные инстанса.
+
+### Где взять `idInstance` и `apiTokenInstance`
+
+1. Зарегистрируйтесь в [личном кабинете GREEN-API](https://console.green-api.com).
+2. Создайте инстанс (тариф «Developer» бесплатный).
+3. На странице инстанса скопируйте `idInstance`, `apiTokenInstance` и `apiUrl`.
+   У каждого инстанса свой хост (например, `https://7103.api.greenapi.com`). Его нужно указать в поле `apiUrl` на форме входа.
+   Общий `https://api.green-api.com` тоже работает.
+
+### Как привязать WhatsApp к инстансу
+
+1. В личном кабинете откройте инстанс и нажмите «Сканировать QR-код».
+2. На телефоне: WhatsApp → «Настройки» → «Связанные устройства» → «Привязка устройства», отсканируйте QR-код.
+3. Дождитесь статуса `authorized`. После этого можно входить в чат.
+
+### Сквозная проверка
+
+1. Войдите с данными инстанса.
+2. Нажмите «+», введите номер другого телефона с WhatsApp и нажмите «Создать».
+3. Отправьте сообщение: оно придёт на этот телефон.
+4. Ответьте с телефона: ответ появится в чате через несколько секунд.
+
+## Команды
+
+| Команда           | Что делает                                     |
+| ----------------- | ---------------------------------------------- |
+| `npm run dev`     | dev-сервер                                     |
+| `npm run build`   | проверка типов и production-сборка в `dist/`   |
+| `npm run preview` | просмотр production-сборки                     |
+| `npm run lint`    | ESLint и проверка форматирования Prettier      |
+| `npm run format`  | автоформатирование Prettier                    |
+| `npm test`        | юнит-тесты (телефон, разбор вебхуков, reducer) |
+
+## Деплой
+
+GitHub Actions ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) на каждый push в `main` запускает линтер, тесты и сборку, затем публикует `dist/` на GitHub Pages.
+В настройках репозитория нужно один раз выбрать Settings → Pages → Source: **GitHub Actions**.
+
+Сборка использует относительный `base: './'`, поэтому `dist/` можно без изменений выложить и на Vercel или любой статический хостинг.
+
+## Как устроено
+
+```
+src/
+  api/greenApi.ts        запросы к GREEN-API и понятные тексты ошибок
+  api/types.ts           типы ответов и вебхуков
+  api/webhook.ts         разбор вебхука в сообщение чата
+  context/chatReducer.ts состояние: креды, чаты, сообщения, активный чат
+  context/ChatContext.tsx провайдер: отправка, вход/выход, синхронизация с localStorage
+  context/persistence.ts чтение и проверка сохранённых данных
+  hooks/usePolling.ts    цикл получения уведомлений
+  components/            ChatLayout, Sidebar, NewChatForm, ChatWindow, MessageList, MessageInput
+  pages/LoginPage.tsx
+  utils/phone.ts         нормализация и валидация номера
+  utils/storage.ts       обёртка над localStorage с try/catch
+```
+
+**Получение сообщений.** `usePolling` выполняет цикл: `receiveNotification`, обработка, `deleteNotification`, сразу следующий запрос.
+Следующий шаг планируется через `setTimeout` только после завершения предыдущего, поэтому запросы не накладываются.
+`receiveNotification` вызывается с `receiveTimeout=5` (long polling): при пустой очереди сервер сам ждёт до 5 секунд, затем клиент делает паузу 2 секунды.
+Каждое уведомление удаляется, в том числе проигнорированные (статусы, медиа, группы). При размонтировании или выходе цикл останавливается через `AbortController`.
+При сетевых ошибках и `429` повтор идёт с растущей паузой (до 30 секунд). При `401/403` цикл останавливается и предлагает войти заново.
+
+**Дедупликация.** Сообщения хранятся с `idMessage` из GREEN-API. Повторно доставленное уведомление не создаёт дубль.
+Отправленное сообщение сначала показывается с временным id, после ответа `sendMessage` получает настоящий `idMessage`.
+Если вебхук `outgoingAPIMessageReceived` пришёл раньше ответа API, локальная копия удаляется.
+
+**Хранение.** Креды лежат в `localStorage` под ключом `greenApiChat:credentials`, история хранится отдельно для каждого инстанса (`greenApiChat:data:<idInstance>`), не больше 500 сообщений на чат.
+Сохранённые данные проверяются при чтении, повреждённые игнорируются.
+
+## Известные ограничения
+
+- Только текст и только личные чаты. Медиа, группы, статусы прочтения, поиск и уведомления не поддерживаются (вне объёма задания).
+- История есть только с момента входа: GREEN-API отдаёт новые события, старую переписку приложение не загружает.
+- Очередь уведомлений у инстанса одна. Если открыть чат в двух вкладках, сообщение получит та, что успеет первой; другая его не увидит до перезагрузки.
+- Токен хранится в `localStorage` в открытом виде, как требует задание. На общем компьютере нужно нажимать «Выйти».
+- После выхода история остаётся в браузере и вернётся при следующем входе в тот же инстанс.
+- Если в очереди инстанса накопились старые уведомления (хранятся 24 часа), после входа они будут загружены и попадут в историю.
+- Бесплатный тариф Developer разрешает писать только в ограниченное число чатов; при превышении приходит ошибка `466`, она показывается в чате.
