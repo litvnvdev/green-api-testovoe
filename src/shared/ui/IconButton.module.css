@@ -1,0 +1,31 @@
+.button {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.button[data-tone='accent'] {
+  color: var(--accent);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.button[aria-expanded='true'] {
+  color: var(--accent);
+  background: var(--bg-active);
+}
+
+.button:disabled {
+  opacity: 0.4;
+}

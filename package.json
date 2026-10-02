@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint . && prettier --check .",
+    "lint": "eslint . && prettier --check . && steiger ./src",
     "format": "prettier --write .",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:fsd": "steiger ./src"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

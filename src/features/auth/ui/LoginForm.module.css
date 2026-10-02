@@ -1,0 +1,84 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.field input {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-m);
+  border: 1px solid transparent;
+  background: var(--bg-input);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field input::placeholder {
+  color: var(--text-mute);
+}
+
+.field input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--text-negative);
+}
+
+.field input:disabled {
+  opacity: 0.6;
+}
+
+.fieldError {
+  font-size: 13px;
+  color: var(--text-negative);
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-mute);
+}
+
+.formError {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-m);
+  background: var(--danger-bg);
+  color: var(--text-negative);
+  font-size: 14px;
+}
+
+.submit {
+  height: 48px;
+  margin-top: 4px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  font-size: 16px;
+  transition: background 0.15s;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.submit:disabled {
+  opacity: 0.7;
+}

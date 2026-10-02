@@ -1,0 +1,95 @@
+.menuWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  min-width: 220px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--radius-m);
+  background: var(--bg-elevated);
+  border: 1px solid var(--divider);
+  box-shadow: 0 12px 32px #00000052;
+}
+
+.menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-s);
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+}
+
+.menu button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.menu button:disabled {
+  opacity: 0.4;
+}
+
+.menu .menuDanger {
+  color: var(--text-negative);
+}
+
+.confirm {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  width: min(320px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-m);
+  background: var(--bg-elevated);
+  border: 1px solid var(--divider);
+  box-shadow: 0 12px 32px #00000052;
+  font-size: 14px;
+}
+
+.confirm p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.confirmActions button {
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+  font-weight: 500;
+}
+
+.confirmActions button:hover {
+  background: var(--bg-hover);
+}
+
+.confirmActions .danger {
+  background: var(--text-negative);
+  color: #fff;
+}
+
+.confirmActions .danger:hover {
+  background: var(--text-negative);
+  opacity: 0.9;
+}
