@@ -76,6 +76,17 @@ describe('chatReducer', () => {
     expect(state.data.messages[chatId]?.map((m) => m.id)).toEqual(['a', 'b']);
   });
 
+  it('clearChat удаляет только сообщения этого чата, чат остаётся в списке', () => {
+    const other = '79007654321@c.us';
+    let state = createInitialState(creds, emptyData);
+    state = chatReducer(state, { type: 'receive', message: msg({}) });
+    state = chatReducer(state, { type: 'receive', message: msg({ id: 'x', chatId: other }) });
+    state = chatReducer(state, { type: 'clearChat', chatId });
+    expect(state.data.messages[chatId]).toBeUndefined();
+    expect(state.data.messages[other]).toHaveLength(1);
+    expect(state.data.chats.map((c) => c.id)).toEqual([chatId, other]);
+  });
+
   it('logout очищает креды и данные', () => {
     let state = createInitialState(creds, emptyData);
     state = chatReducer(state, { type: 'receive', message: msg({}) });

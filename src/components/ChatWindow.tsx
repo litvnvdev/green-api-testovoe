@@ -4,7 +4,7 @@ import type { Chat, ChatMessage } from '../types';
 import { formatChatId } from '../utils/phone';
 import { Avatar } from './Avatar';
 import styles from './ChatWindow.module.css';
-import { BackIcon, CloseIcon } from './Icons';
+import { BackIcon, CloseIcon, TrashIcon } from './Icons';
 import { MessageInput } from './MessageInput';
 import { MessageList } from './MessageList';
 
@@ -13,8 +13,9 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chat }: ChatWindowProps) {
-  const { state, send, retry, selectChat } = useChat();
+  const { state, send, retry, selectChat, clearChat } = useChat();
   const [error, setError] = useState<string | null>(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
   const messages = state.data.messages[chat.id] ?? [];
   const phone = formatChatId(chat.id);
 
@@ -50,7 +51,47 @@ export function ChatWindow({ chat }: ChatWindowProps) {
           <h2 className={styles.name}>{chat.name ?? phone}</h2>
           <p className={styles.subtitle}>{chat.name ? phone : 'WhatsApp'}</p>
         </div>
+        <button
+          type="button"
+          className={styles.headerButton}
+          onClick={() => setConfirmingClear((value) => !value)}
+          disabled={messages.length === 0}
+          aria-expanded={confirmingClear}
+          aria-controls="clear-chat-confirm"
+          aria-label="Очистить историю"
+          title="Очистить историю"
+        >
+          <TrashIcon width={22} height={22} />
+        </button>
       </header>
+
+      {confirmingClear && (
+        <div
+          id="clear-chat-confirm"
+          className={styles.confirm}
+          role="alertdialog"
+          aria-labelledby="clear-chat-text"
+        >
+          <p id="clear-chat-text">
+            Удалить историю этого чата на сайте? В WhatsApp сообщения останутся.
+          </p>
+          <div className={styles.confirmActions}>
+            <button type="button" onClick={() => setConfirmingClear(false)} autoFocus>
+              Отмена
+            </button>
+            <button
+              type="button"
+              className={styles.danger}
+              onClick={() => {
+                clearChat(chat.id);
+                setConfirmingClear(false);
+              }}
+            >
+              Очистить
+            </button>
+          </div>
+        </div>
+      )}
 
       <MessageList messages={messages} onRetry={handleRetry} />
 
