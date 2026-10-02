@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { credentialsSchema, DEFAULT_API_URL } from '@/shared/api';
-import { TextField } from '@/shared/ui';
+import { Spinner, TextField } from '@/shared/ui';
 import { useLogin } from '../model/useLogin';
 import styles from './LoginForm.module.css';
 
@@ -61,7 +61,13 @@ export function LoginForm() {
       )}
 
       <button type="submit" className={styles.submit} disabled={isPending}>
-        {isPending ? 'Проверяем…' : 'Войти'}
+        {isPending ? (
+          <>
+            <Spinner size={18} /> Проверяем…
+          </>
+        ) : (
+          'Войти'
+        )}
       </button>
     </form>
   );

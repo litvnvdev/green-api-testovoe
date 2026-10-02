@@ -1,33 +1,55 @@
 import { createBrowserRouter, Navigate } from 'react-router';
-import { ChatPage } from '@/pages/chat';
-import { ChatsPage, ChatsPlaceholder } from '@/pages/chats';
-import { LoginPage } from '@/pages/login';
 import { ROUTES } from '@/shared/config';
+import { PageLoader } from '@/shared/ui';
 import { AuthorizedArea } from './AuthorizedArea';
 import { GuestOnly, RequireAuth } from './guards';
+import { RootLayout } from './RootLayout';
 
+/**
+ * Страницы грузятся лениво (отдельные чанки). Пока грузится первая — HydrateFallback,
+ * при переходах — полоса прогресса в RootLayout.
+ */
 export const router = createBrowserRouter([
   {
-    path: ROUTES.login,
-    element: (
-      <GuestOnly>
-        <LoginPage />
-      </GuestOnly>
-    ),
-  },
-  {
-    path: ROUTES.chats,
-    element: (
-      <RequireAuth>
-        <AuthorizedArea>
-          <ChatsPage />
-        </AuthorizedArea>
-      </RequireAuth>
-    ),
+    Component: RootLayout,
+    HydrateFallback: PageLoader,
     children: [
-      { index: true, element: <ChatsPlaceholder /> },
-      { path: ROUTES.chat, element: <ChatPage /> },
+      {
+        Component: GuestOnly,
+        children: [
+          {
+            path: ROUTES.login,
+            lazy: async () => ({ Component: (await import('@/pages/login')).LoginPage }),
+          },
+        ],
+      },
+      {
+        Component: RequireAuth,
+        children: [
+          {
+            Component: AuthorizedArea,
+            children: [
+              {
+                path: ROUTES.chats,
+                lazy: async () => ({ Component: (await import('@/pages/chats')).ChatsPage }),
+                children: [
+                  {
+                    index: true,
+                    lazy: async () => ({
+                      Component: (await import('@/pages/chats')).ChatsPlaceholder,
+                    }),
+                  },
+                  {
+                    path: ROUTES.chat,
+                    lazy: async () => ({ Component: (await import('@/pages/chat')).ChatPage }),
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      { path: '*', element: <Navigate to={ROUTES.chats} replace /> },
     ],
   },
-  { path: '*', element: <Navigate to={ROUTES.chats} replace /> },
 ]);

@@ -1,3 +1,4 @@
+import { Spinner } from '@/shared/ui';
 import type { PollingStatus } from '../model/usePolling';
 import { useReceiveMessages } from '../model/context';
 import styles from './ConnectionStatus.module.css';
@@ -18,6 +19,7 @@ export function ConnectionStatus() {
   const { status } = useReceiveMessages();
   return (
     <p className={styles.status} data-state={status.state} role="status">
+      {(status.state === 'connecting' || status.state === 'idle') && <Spinner size={11} />}
       {statusText(status)}
     </p>
   );
