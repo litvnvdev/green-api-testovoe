@@ -9,7 +9,7 @@ export {
   type GreenApiErrorKind,
 } from './client';
 export { settingsWarnings } from './settings';
-export { parseWebhook } from './webhook';
+export { parseStatusWebhook, parseWebhook } from './webhook';
 export {
   MAX_MESSAGE_LENGTH,
   credentialsSchema,
@@ -19,6 +19,8 @@ export {
 export type {
   Credentials,
   CredentialsInput,
+  DeliveryStatus,
+  MessageStatusEvent,
   InstanceSettings,
   InstanceState,
   MessageDirection,

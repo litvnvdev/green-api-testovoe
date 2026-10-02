@@ -20,4 +20,14 @@ describe('settingsWarnings', () => {
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('webhookUrl');
   });
+
+  it('подсказывает включить статусы отправленных сообщений', () => {
+    const warnings = settingsWarnings({
+      webhookUrl: '',
+      incomingWebhook: 'yes',
+      outgoingWebhook: 'no',
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('outgoingWebhook');
+  });
 });

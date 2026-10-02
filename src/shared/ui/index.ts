@@ -11,6 +11,7 @@ export {
   CheckIcon,
   ClockIcon,
   CloseIcon,
+  DoubleCheckIcon,
   EraseIcon,
   LogoutIcon,
   MoreIcon,

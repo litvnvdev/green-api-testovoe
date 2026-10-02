@@ -1,6 +1,6 @@
 import { Fragment, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { formatDayLabel, formatTime, isSameDay } from '@/shared/lib';
-import { AlertIcon, CheckIcon, ClockIcon } from '@/shared/ui';
+import { AlertIcon, CheckIcon, ClockIcon, DoubleCheckIcon } from '@/shared/ui';
 import type { ChatMessage } from '../model/types';
 import styles from './MessageList.module.css';
 
@@ -10,15 +10,21 @@ interface MessageListProps {
   renderFooter?: (message: ChatMessage) => ReactNode;
 }
 
+/** Отметки как в мессенджерах: часы, одна галочка, две серые, две синие. */
 function StatusMark({ message }: { message: ChatMessage }) {
   if (message.direction === 'in') return null;
-  if (message.status === 'sending') {
-    return <ClockIcon className={styles.statusIcon} aria-label="Отправляется" role="img" />;
+  switch (message.status) {
+    case 'sending':
+      return <ClockIcon className={styles.statusIcon} aria-label="Отправляется" role="img" />;
+    case 'failed':
+      return <AlertIcon className={styles.failedIcon} aria-label="Не отправлено" role="img" />;
+    case 'sent':
+      return <CheckIcon className={styles.statusIcon} aria-label="Отправлено" role="img" />;
+    case 'delivered':
+      return <DoubleCheckIcon className={styles.statusIcon} aria-label="Доставлено" role="img" />;
+    case 'read':
+      return <DoubleCheckIcon className={styles.readIcon} aria-label="Прочитано" role="img" />;
   }
-  if (message.status === 'failed') {
-    return <AlertIcon className={styles.failedIcon} aria-label="Не отправлено" role="img" />;
-  }
-  return <CheckIcon className={styles.statusIcon} aria-label="Отправлено" role="img" />;
 }
 
 export function MessageList({ messages, renderFooter }: MessageListProps) {

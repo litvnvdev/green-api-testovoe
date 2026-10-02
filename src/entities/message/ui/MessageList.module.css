@@ -118,6 +118,11 @@
   color: var(--bubble-meta);
 }
 
+/* Прочитано — акцентный цвет, как синие галочки в мессенджерах. */
+.readIcon {
+  color: var(--read-mark);
+}
+
 .failedIcon {
   color: var(--text-negative);
 }

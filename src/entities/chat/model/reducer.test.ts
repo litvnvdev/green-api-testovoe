@@ -76,6 +76,31 @@ describe('chatReducer', () => {
     expect(state.data.chats.map((c) => c.id)).toEqual([chatId]);
   });
 
+  it('updateStatus продвигает статус исходящего и не откатывает его', () => {
+    let state = createInitialState(emptyData);
+    state = chatReducer(state, { type: 'receive', message: msg({ id: 'OUT', direction: 'out' }) });
+    state = chatReducer(state, { type: 'updateStatus', chatId, id: 'OUT', status: 'read' });
+    const late = chatReducer(state, {
+      type: 'updateStatus',
+      chatId,
+      id: 'OUT',
+      status: 'delivered',
+    });
+    expect(late).toBe(state);
+    expect(state.data.messages[chatId]?.[0]?.status).toBe('read');
+  });
+
+  it('updateStatus не трогает входящие и неизвестные сообщения', () => {
+    let state = createInitialState(emptyData);
+    state = chatReducer(state, { type: 'receive', message: msg({}) });
+    expect(chatReducer(state, { type: 'updateStatus', chatId, id: 'm1', status: 'read' })).toBe(
+      state,
+    );
+    expect(chatReducer(state, { type: 'updateStatus', chatId, id: 'nope', status: 'read' })).toBe(
+      state,
+    );
+  });
+
   it('сообщения упорядочены по времени', () => {
     let state = createInitialState(emptyData);
     state = chatReducer(state, { type: 'receive', message: msg({ id: 'b', timestamp: 2000 }) });

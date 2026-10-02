@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WebhookBody } from './types';
-import { parseWebhook } from './webhook';
+import { parseStatusWebhook, parseWebhook } from './webhook';
 
 const base = {
   instanceData: { idInstance: 1101000001, wid: '79990000000@c.us', typeInstance: 'whatsapp' },
@@ -96,5 +96,35 @@ describe('parseWebhook', () => {
 
   it('не падает на битом теле', () => {
     expect(parseWebhook({ typeWebhook: 'incomingMessageReceived' })).toBeNull();
+  });
+});
+
+describe('parseStatusWebhook', () => {
+  const status = (value: string) => ({
+    typeWebhook: 'outgoingMessageStatus',
+    chatId: '79001234567@c.us',
+    instanceData: { idInstance: 1101000001, wid: '79990000000@c.us', typeInstance: 'whatsapp' },
+    timestamp: 1727691478,
+    idMessage: '3EB0608D6A2901063D63',
+    status: value,
+    sendByApi: true,
+  });
+
+  it('разбирает статус прочтения', () => {
+    expect(parseStatusWebhook(status('read'))).toEqual({
+      id: '3EB0608D6A2901063D63',
+      chatId: '79001234567@c.us',
+      status: 'read',
+    });
+  });
+
+  it('отказы WhatsApp сводятся к failed', () => {
+    expect(parseStatusWebhook(status('noAccount'))?.status).toBe('failed');
+    expect(parseStatusWebhook(status('suspended'))?.status).toBe('failed');
+  });
+
+  it('неизвестный статус и другие вебхуки игнорируются', () => {
+    expect(parseStatusWebhook(status('something'))).toBeNull();
+    expect(parseStatusWebhook({ typeWebhook: 'incomingMessageReceived' })).toBeNull();
   });
 });

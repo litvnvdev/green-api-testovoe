@@ -46,6 +46,8 @@ export const instanceSettingsSchema = z.object({
     .nullish()
     .transform((value) => value ?? ''),
   incomingWebhook: z.string(),
+  /** Статусы отправленных сообщений: доставлено / прочитано. */
+  outgoingWebhook: z.string().optional(),
   outgoingMessageWebhook: z.string().optional(),
   outgoingAPIMessageWebhook: z.string().optional(),
 });
@@ -105,10 +107,44 @@ export const textMessageWebhookSchema = z.object({
   messageData: textFromMessageDataSchema,
 });
 
+/**
+ * Статус доставки исходящего сообщения. Отказы WhatsApp сводим к failed:
+ * для пользователя это одно и то же — «не отправлено».
+ */
+export const deliveryStatusSchema = z
+  .enum([
+    'sent',
+    'delivered',
+    'read',
+    'failed',
+    'noAccount',
+    'notInGroup',
+    'yellowCard',
+    'suspended',
+  ])
+  .transform((status) =>
+    status === 'sent' || status === 'delivered' || status === 'read' ? status : 'failed',
+  );
+
+export const messageStatusWebhookSchema = z.object({
+  typeWebhook: z.literal('outgoingMessageStatus'),
+  chatId: z.string().endsWith('@c.us'),
+  /** Тот же idMessage, что вернул sendMessage. */
+  idMessage: z.string(),
+  status: deliveryStatusSchema,
+});
+
 // ---------- Результат разбора вебхука ----------
 
 /** in — пришло от собеседника, out — отправлено с этого аккаунта (из API или с телефона). */
 export const messageDirectionSchema = z.enum(['in', 'out']);
+
+/** Изменение статуса отправленного сообщения. */
+export const messageStatusEventSchema = z.object({
+  id: z.string(),
+  chatId: z.string(),
+  status: z.enum(['sent', 'delivered', 'read', 'failed']),
+});
 
 /** Текстовое сообщение, извлечённое из вебхука. Основа для доменной схемы сообщения. */
 export const textMessageEventSchema = z.object({

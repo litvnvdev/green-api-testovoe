@@ -1,5 +1,5 @@
-import { textMessageWebhookSchema } from './schemas';
-import type { TextMessageEvent, WebhookBody } from './types';
+import { messageStatusWebhookSchema, textMessageWebhookSchema } from './schemas';
+import type { MessageStatusEvent, TextMessageEvent, WebhookBody } from './types';
 
 /**
  * Превращает тело уведомления в текстовое событие.
@@ -24,4 +24,12 @@ export function parseWebhook(body: WebhookBody): TextMessageEvent | null {
         ? senderData.senderContactName || senderData.senderName || undefined
         : undefined,
   };
+}
+
+/** Статус отправленного сообщения (outgoingMessageStatus) или null для всех прочих вебхуков. */
+export function parseStatusWebhook(body: WebhookBody): MessageStatusEvent | null {
+  const parsed = messageStatusWebhookSchema.safeParse(body);
+  if (!parsed.success) return null;
+  const { idMessage, chatId, status } = parsed.data;
+  return { id: idMessage, chatId, status };
 }

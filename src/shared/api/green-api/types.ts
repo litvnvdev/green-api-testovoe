@@ -5,6 +5,7 @@ import type {
   instanceSettingsSchema,
   instanceStateSchema,
   messageDirectionSchema,
+  messageStatusEventSchema,
   notificationSchema,
   sendMessageResponseSchema,
   textMessageEventSchema,
@@ -28,3 +29,5 @@ export type Notification = NonNullable<z.infer<typeof notificationSchema>>;
 
 export type MessageDirection = z.infer<typeof messageDirectionSchema>;
 export type TextMessageEvent = z.infer<typeof textMessageEventSchema>;
+export type MessageStatusEvent = z.infer<typeof messageStatusEventSchema>;
+export type DeliveryStatus = MessageStatusEvent['status'];

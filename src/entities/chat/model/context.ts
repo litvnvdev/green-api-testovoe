@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { ChatMessage } from '@/entities/message/@x/chat';
+import type { ChatMessage, MessageStatus } from '@/entities/message/@x/chat';
 import type { ChatState } from './reducer';
 
 export interface ChatStoreActions {
@@ -11,6 +11,8 @@ export interface ChatStoreActions {
   sendSuccess: (chatId: string, localId: string, idMessage: string) => void;
   sendFailed: (chatId: string, localId: string) => void;
   retry: (chatId: string, localId: string) => void;
+  /** Статус доставки из вебхука outgoingMessageStatus. */
+  updateStatus: (chatId: string, id: string, status: MessageStatus) => void;
   /** Только локальная история: в WhatsApp ничего не меняется. */
   clearChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;

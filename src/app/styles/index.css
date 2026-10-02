@@ -21,6 +21,7 @@
   --bubble-out: #1b4d8f;
   --bubble-text: #ffffff;
   --bubble-meta: #ffffff99;
+  --read-mark: #5ec7ff;
   --chat-pattern: #016fe714;
   --danger-bg: #ce425726;
   --focus-ring: #4b91fb;
@@ -58,6 +59,7 @@
     --bubble-out: #d6e8ff;
     --bubble-text: #060708;
     --bubble-meta: #0607088a;
+    --read-mark: #016fe7;
     --chat-pattern: #016fe712;
     --danger-bg: #ce425714;
   }
