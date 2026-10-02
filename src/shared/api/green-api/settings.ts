@@ -16,5 +16,10 @@ export function settingsWarnings(settings: InstanceSettings): string[] {
       'В настройках инстанса указан URL для вебхуков (webhookUrl). Уведомления уходят на него, а не в очередь HTTP API — очистите поле.',
     );
   }
+  if (settings.outgoingWebhook !== undefined && settings.outgoingWebhook !== 'yes') {
+    warnings.push(
+      'Выключены уведомления о статусах отправленных сообщений (outgoingWebhook): отметки «доставлено» и «прочитано» не будут обновляться.',
+    );
+  }
   return warnings;
 }

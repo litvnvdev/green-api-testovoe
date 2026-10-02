@@ -32,6 +32,7 @@ export function ChatStoreProvider({ instanceId, children }: ChatStoreProviderPro
         dispatch({ type: 'sendSuccess', chatId, localId, idMessage }),
       sendFailed: (chatId, localId) => dispatch({ type: 'sendFailed', chatId, localId }),
       retry: (chatId, localId) => dispatch({ type: 'retry', chatId, localId }),
+      updateStatus: (chatId, id, status) => dispatch({ type: 'updateStatus', chatId, id, status }),
       clearChat: (chatId) => dispatch({ type: 'clearChat', chatId }),
       deleteChat: (chatId) => dispatch({ type: 'deleteChat', chatId }),
     }),

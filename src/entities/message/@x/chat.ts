@@ -1,2 +1,3 @@
 export { chatMessageSchema } from '../model/schema';
-export type { ChatMessage } from '../model/types';
+export { mergeStatus } from '../model/status';
+export type { ChatMessage, MessageStatus } from '../model/types';

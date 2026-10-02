@@ -1,4 +1,4 @@
-import type { ChatMessage } from '@/entities/message/@x/chat';
+import { mergeStatus, type ChatMessage, type MessageStatus } from '@/entities/message/@x/chat';
 import type { Chat, ChatData } from './types';
 
 /** Сколько сообщений храним на чат, чтобы не упереться в квоту localStorage (~5 МБ). */
@@ -16,6 +16,7 @@ export type ChatAction =
   | { type: 'sendSuccess'; chatId: string; localId: string; idMessage: string }
   | { type: 'sendFailed'; chatId: string; localId: string }
   | { type: 'retry'; chatId: string; localId: string }
+  | { type: 'updateStatus'; chatId: string; id: string; status: MessageStatus }
   | { type: 'clearChat'; chatId: string }
   | { type: 'deleteChat'; chatId: string };
 
@@ -109,6 +110,19 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
             ? { ...item, id: action.idMessage, status: 'sent' as const }
             : item,
         );
+      });
+      return data === state.data ? state : { ...state, data };
+    }
+
+    case 'updateStatus': {
+      // Статус мог прийти раньше ответа sendMessage (у сообщения ещё local-id) — тогда
+      // его подтвердит sendSuccess, а следующие статусы найдут сообщение по idMessage.
+      const data = updateChatMessages(state.data, action.chatId, (list) => {
+        const message = list.find((item) => item.id === action.id);
+        if (!message || message.direction !== 'out') return list;
+        const status = mergeStatus(message.status, action.status);
+        if (status === message.status) return list;
+        return list.map((item) => (item.id === action.id ? { ...item, status } : item));
       });
       return data === state.data ? state : { ...state, data };
     }

@@ -71,6 +71,12 @@ export const CheckIcon = (props: IconProps) => (
   </svg>
 );
 
+export const DoubleCheckIcon = (props: IconProps) => (
+  <svg {...base} viewBox="0 0 18 16" width={16} height={14} {...props}>
+    <path d="M1.5 8.5l3 3 7-7M8 11.5l7-7" />
+  </svg>
+);
+
 export const ClockIcon = (props: IconProps) => (
   <svg {...base} viewBox="0 0 16 16" width={14} height={14} strokeWidth={1.6} {...props}>
     <circle cx="8" cy="8" r="6" />
