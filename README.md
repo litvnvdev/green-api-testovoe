@@ -3,7 +3,7 @@
 Минимальный веб-чат для отправки и получения текстовых сообщений WhatsApp через [GREEN-API](https://green-api.com).
 Внешний вид по мотивам [web.max.ru](https://web.max.ru): две колонки, слева список чатов, справа переписка.
 
-**Демо:** https://litvnvdev.github.io/green-api-testovoe/
+**Демо:** https://green-api-testovoe-murex.vercel.app/
 
 | Вход                                | Чат                               | Мобильная версия                          |
 | ----------------------------------- | --------------------------------- | ----------------------------------------- |
@@ -50,7 +50,8 @@ npm run dev
 
 1. В личном кабинете откройте инстанс и нажмите «Сканировать QR-код».
 2. На телефоне: WhatsApp → «Настройки» → «Связанные устройства» → «Привязка устройства», отсканируйте QR-код.
-3. Дождитесь статуса `authorized`. После этого можно входить в чат.
+3. Дождитесь статуса `authorized`.
+4. В «Настройках» инстанса включите **Receive webhooks on incoming messages and files** (без этого ответы не придут) и, по желанию, **Receive webhooks on messages sent from phone**, чтобы видеть в чате сообщения, отправленные с телефона. Поле **Webhook Url** оставьте пустым. Сохраните и подождите несколько минут.
 
 ### Сквозная проверка
 
@@ -78,8 +79,8 @@ npm run dev
 
 ## Деплой
 
-GitHub Actions ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) на каждый push в `main` запускает линтер, тесты и сборку, затем публикует `dist/` на GitHub Pages.
-В настройках репозитория нужно один раз выбрать Settings → Pages → Source: **GitHub Actions**.
+Приложение развёрнуто на Vercel: проект подключён к репозиторию, каждый push в `main` публикуется автоматически (Framework preset: Vite, команда `npm run build`, папка `dist`).
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) на каждый push и pull request запускает линтер, тесты и сборку.
 
 Сборка использует относительный `base: './'`, поэтому `dist/` можно без изменений выложить и на Vercel или любой статический хостинг.
 
