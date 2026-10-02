@@ -27,7 +27,10 @@ export function extractText(data: MessageData): string | null {
   if (data.typeMessage === 'textMessage' && 'textMessageData' in data) {
     return data.textMessageData.textMessage;
   }
-  if (data.typeMessage === 'extendedTextMessage' && 'extendedTextMessageData' in data) {
+  if (
+    (data.typeMessage === 'extendedTextMessage' || data.typeMessage === 'quotedMessage') &&
+    'extendedTextMessageData' in data
+  ) {
     return data.extendedTextMessageData.text;
   }
   return null;

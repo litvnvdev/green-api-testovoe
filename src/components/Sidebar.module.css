@@ -189,3 +189,25 @@
   color: #fff;
   font-weight: 600;
 }
+
+.warning {
+  margin: 0 12px 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-m);
+  background: #ffd60a1f;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.warning p {
+  margin: 0;
+}
+
+.warning p + p {
+  margin-top: 6px;
+}
+
+.warning a {
+  color: var(--accent);
+}
