@@ -25,7 +25,8 @@ export type ChatAction =
   | { type: 'sendSuccess'; chatId: string; localId: string; idMessage: string }
   | { type: 'sendFailed'; chatId: string; localId: string }
   | { type: 'retry'; chatId: string; localId: string }
-  | { type: 'clearChat'; chatId: string };
+  | { type: 'clearChat'; chatId: string }
+  | { type: 'deleteChat'; chatId: string };
 
 export const emptyData: ChatData = { chats: [], messages: {} };
 
@@ -89,6 +90,19 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         Object.entries(state.data.messages).filter(([id]) => id !== action.chatId),
       );
       return { ...state, data: { ...state.data, messages } };
+    }
+
+    case 'deleteChat': {
+      // Удаляем чат и его историю только на сайте. Новое сообщение с этого номера создаст чат заново.
+      if (!state.data.chats.some((chat) => chat.id === action.chatId)) return state;
+      const messages = Object.fromEntries(
+        Object.entries(state.data.messages).filter(([id]) => id !== action.chatId),
+      );
+      return {
+        ...state,
+        activeChatId: state.activeChatId === action.chatId ? null : state.activeChatId,
+        data: { chats: state.data.chats.filter((chat) => chat.id !== action.chatId), messages },
+      };
     }
 
     case 'selectChat':
