@@ -1,0 +1,21 @@
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status[data-state='online'] {
+  color: var(--text-positive);
+}
+
+.status[data-state='error'] {
+  color: var(--text-negative);
+  white-space: normal;
+}
