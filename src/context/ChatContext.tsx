@@ -32,6 +32,8 @@ interface ChatContextValue {
   /** Отправляет текст в чат. Возвращает текст ошибки для показа пользователю или null. */
   send: (chatId: string, text: string) => Promise<string | null>;
   retry: (message: ChatMessage) => Promise<string | null>;
+  /** Удаляет историю чата только в этом браузере (localStorage), не в WhatsApp. */
+  clearChat: (chatId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -80,6 +82,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openChat = useCallback((chatId: string) => dispatch({ type: 'openChat', chatId }), []);
+  const clearChat = useCallback((chatId: string) => dispatch({ type: 'clearChat', chatId }), []);
   const selectChat = useCallback(
     (chatId: string | null) => dispatch({ type: 'selectChat', chatId }),
     [],
@@ -128,8 +131,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<ChatContextValue>(
-    () => ({ state, polling, login, logout, openChat, selectChat, send, retry }),
-    [state, polling, login, logout, openChat, selectChat, send, retry],
+    () => ({ state, polling, login, logout, openChat, selectChat, send, retry, clearChat }),
+    [state, polling, login, logout, openChat, selectChat, send, retry, clearChat],
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

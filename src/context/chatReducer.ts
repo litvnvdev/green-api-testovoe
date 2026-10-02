@@ -24,7 +24,8 @@ export type ChatAction =
   | { type: 'sendStart'; message: ChatMessage }
   | { type: 'sendSuccess'; chatId: string; localId: string; idMessage: string }
   | { type: 'sendFailed'; chatId: string; localId: string }
-  | { type: 'retry'; chatId: string; localId: string };
+  | { type: 'retry'; chatId: string; localId: string }
+  | { type: 'clearChat'; chatId: string };
 
 export const emptyData: ChatData = { chats: [], messages: {} };
 
@@ -80,6 +81,15 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
           chats: ensureChat(state.data.chats, action.chatId, Date.now()),
         },
       };
+
+    case 'clearChat': {
+      // Только локальная история: в WhatsApp сообщения остаются. Сам чат в списке сохраняется.
+      if (!state.data.messages[action.chatId]?.length) return state;
+      const messages = Object.fromEntries(
+        Object.entries(state.data.messages).filter(([id]) => id !== action.chatId),
+      );
+      return { ...state, data: { ...state.data, messages } };
+    }
 
     case 'selectChat':
       return { ...state, activeChatId: action.chatId };

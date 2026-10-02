@@ -36,7 +36,83 @@
 }
 
 .headerText {
+  flex: 1;
   min-width: 0;
+}
+
+.headerButton {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.headerButton:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-negative);
+}
+
+.headerButton[aria-expanded='true'] {
+  color: var(--text-negative);
+  background: var(--danger-bg);
+}
+
+.headerButton:disabled {
+  opacity: 0.35;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 16px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--divider);
+  font-size: 14px;
+}
+
+.confirm p {
+  flex: 1 1 220px;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.confirmActions button {
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+  font-weight: 500;
+}
+
+.confirmActions button:hover {
+  background: var(--bg-hover);
+}
+
+.confirmActions .danger {
+  background: var(--text-negative);
+  color: #fff;
+}
+
+.confirmActions .danger:hover {
+  background: var(--text-negative);
+  opacity: 0.9;
 }
 
 .name {
