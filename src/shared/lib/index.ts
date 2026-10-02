@@ -1,3 +1,4 @@
+export { fitTextareaHeight } from './dom';
 export { formatDayLabel, formatListDate, formatTime, isSameDay } from './format';
 export {
   MAX_PHONE_DIGITS,
