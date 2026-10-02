@@ -45,6 +45,20 @@ export const CloseIcon = (props: IconProps) => (
   </svg>
 );
 
+export const MoreIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="19" r="1" />
+  </svg>
+);
+
+export const EraseIcon = (props: IconProps) => (
+  <svg {...base} strokeWidth={1.8} {...props}>
+    <path d="M4 6h16M4 12h10M4 18h7M16 16l4 4M20 16l-4 4" />
+  </svg>
+);
+
 export const TrashIcon = (props: IconProps) => (
   <svg {...base} strokeWidth={1.8} {...props}>
     <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />

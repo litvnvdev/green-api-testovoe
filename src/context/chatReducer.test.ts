@@ -87,6 +87,27 @@ describe('chatReducer', () => {
     expect(state.data.chats.map((c) => c.id)).toEqual([chatId, other]);
   });
 
+  it('deleteChat убирает чат и его историю и закрывает его, если он открыт', () => {
+    const other = '79007654321@c.us';
+    let state = createInitialState(creds, emptyData);
+    state = chatReducer(state, { type: 'receive', message: msg({}) });
+    state = chatReducer(state, { type: 'receive', message: msg({ id: 'x', chatId: other }) });
+    state = chatReducer(state, { type: 'selectChat', chatId });
+    state = chatReducer(state, { type: 'deleteChat', chatId });
+    expect(state.activeChatId).toBeNull();
+    expect(state.data.chats.map((c) => c.id)).toEqual([other]);
+    expect(Object.keys(state.data.messages)).toEqual([other]);
+  });
+
+  it('после deleteChat новое входящее создаёт чат заново', () => {
+    let state = createInitialState(creds, emptyData);
+    state = chatReducer(state, { type: 'receive', message: msg({}) });
+    state = chatReducer(state, { type: 'deleteChat', chatId });
+    state = chatReducer(state, { type: 'receive', message: msg({ id: 'new', timestamp: 5000 }) });
+    expect(state.data.chats.map((c) => c.id)).toEqual([chatId]);
+    expect(state.data.messages[chatId]?.map((m) => m.id)).toEqual(['new']);
+  });
+
   it('logout очищает креды и данные', () => {
     let state = createInitialState(creds, emptyData);
     state = chatReducer(state, { type: 'receive', message: msg({}) });
