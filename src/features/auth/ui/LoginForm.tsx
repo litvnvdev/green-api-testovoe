@@ -1,53 +1,29 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useSession } from '@/entities/session';
-import {
-  credentialsSchema,
-  DEFAULT_API_URL,
-  getStateInstance,
-  GreenApiError,
-  type Credentials,
-} from '@/shared/api';
+import { credentialsSchema, DEFAULT_API_URL } from '@/shared/api';
 import { TextField } from '@/shared/ui';
-import { describeInstanceState } from '../model/instanceState';
+import { useLogin } from '../model/useLogin';
 import styles from './LoginForm.module.css';
 
 export function LoginForm() {
-  const { login } = useSession();
+  const { login, isPending, errorMessage } = useLogin();
 
   const {
     register,
     handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     // Та же схема проверяет креды при чтении сессии из localStorage.
     resolver: zodResolver(credentialsSchema),
     defaultValues: { idInstance: '', apiTokenInstance: '', apiUrl: DEFAULT_API_URL },
   });
 
-  async function onSubmit(credentials: Credentials) {
-    try {
-      // Сохраняем креды, только если инстанс реально готов работать.
-      const { stateInstance } = await getStateInstance(credentials);
-      if (stateInstance === 'authorized') {
-        login(credentials);
-        return;
-      }
-      setError('root', { message: describeInstanceState(stateInstance) });
-    } catch (error) {
-      setError('root', {
-        message: error instanceof GreenApiError ? error.message : 'Не удалось войти.',
-      });
-    }
-  }
-
   return (
     <form
       className={styles.form}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit((credentials) => login(credentials))}
       noValidate
-      aria-busy={isSubmitting}
+      aria-busy={isPending}
     >
       <TextField
         label="idInstance"
@@ -55,7 +31,7 @@ export function LoginForm() {
         autoComplete="username"
         placeholder="1101000001"
         error={errors.idInstance?.message}
-        disabled={isSubmitting}
+        disabled={isPending}
         autoFocus
         {...register('idInstance')}
       />
@@ -65,7 +41,7 @@ export function LoginForm() {
         autoComplete="current-password"
         placeholder="••••••••••••"
         error={errors.apiTokenInstance?.message}
-        disabled={isSubmitting}
+        disabled={isPending}
         {...register('apiTokenInstance')}
       />
       <TextField
@@ -74,18 +50,18 @@ export function LoginForm() {
         inputMode="url"
         error={errors.apiUrl?.message}
         hint="Хост инстанса из личного кабинета, например https://7103.api.greenapi.com"
-        disabled={isSubmitting}
+        disabled={isPending}
         {...register('apiUrl')}
       />
 
-      {errors.root?.message && (
+      {errorMessage && (
         <p className={styles.formError} role="alert">
-          {errors.root.message}
+          {errorMessage}
         </p>
       )}
 
-      <button type="submit" className={styles.submit} disabled={isSubmitting}>
-        {isSubmitting ? 'Проверяем…' : 'Войти'}
+      <button type="submit" className={styles.submit} disabled={isPending}>
+        {isPending ? 'Проверяем…' : 'Войти'}
       </button>
     </form>
   );
