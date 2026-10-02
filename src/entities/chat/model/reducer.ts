@@ -4,14 +4,13 @@ import type { Chat, ChatData } from './types';
 /** Сколько сообщений храним на чат, чтобы не упереться в квоту localStorage (~5 МБ). */
 export const MAX_MESSAGES_PER_CHAT = 500;
 
+/** Активный чат здесь не хранится: он определяется URL (/chat/:phone). */
 export interface ChatState {
   data: ChatData;
-  activeChatId: string | null;
 }
 
 export type ChatAction =
-  | { type: 'openChat'; chatId: string }
-  | { type: 'selectChat'; chatId: string | null }
+  | { type: 'addChat'; chatId: string }
   | { type: 'receive'; message: ChatMessage; senderName?: string }
   | { type: 'sendStart'; message: ChatMessage }
   | { type: 'sendSuccess'; chatId: string; localId: string; idMessage: string }
@@ -23,7 +22,7 @@ export type ChatAction =
 export const emptyData: ChatData = { chats: [], messages: {} };
 
 export function createInitialState(data: ChatData): ChatState {
-  return { data, activeChatId: null };
+  return { data };
 }
 
 function ensureChat(chats: Chat[], chatId: string, timestamp: number, name?: string): Chat[] {
@@ -59,15 +58,10 @@ function updateChatMessages(
 
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
-    case 'openChat':
-      return {
-        ...state,
-        activeChatId: action.chatId,
-        data: {
-          ...state.data,
-          chats: ensureChat(state.data.chats, action.chatId, Date.now()),
-        },
-      };
+    case 'addChat': {
+      const chats = ensureChat(state.data.chats, action.chatId, Date.now());
+      return chats === state.data.chats ? state : { ...state, data: { ...state.data, chats } };
+    }
 
     case 'clearChat': {
       // Только локальная история: в WhatsApp сообщения остаются. Сам чат в списке сохраняется.
@@ -86,13 +80,9 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       );
       return {
         ...state,
-        activeChatId: state.activeChatId === action.chatId ? null : state.activeChatId,
         data: { chats: state.data.chats.filter((chat) => chat.id !== action.chatId), messages },
       };
     }
-
-    case 'selectChat':
-      return { ...state, activeChatId: action.chatId };
 
     case 'receive':
     case 'sendStart': {

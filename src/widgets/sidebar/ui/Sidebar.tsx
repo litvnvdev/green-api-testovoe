@@ -3,11 +3,12 @@ import { ChatListItem, selectChatList, useChatStore } from '@/entities/chat';
 import { LogoutButton } from '@/features/auth';
 import { NewChatForm } from '@/features/create-chat';
 import { ConnectionAlerts, ConnectionStatus } from '@/features/receive-messages';
+import { chatPath } from '@/shared/config';
 import { IconButton, PlusIcon } from '@/shared/ui';
 import styles from './Sidebar.module.css';
 
 export function Sidebar() {
-  const { data, activeChatId, actions } = useChatStore();
+  const { data } = useChatStore();
   const [creating, setCreating] = useState(false);
   const items = useMemo(() => selectChatList(data), [data]);
 
@@ -45,11 +46,7 @@ export function Sidebar() {
         <ul className={styles.list}>
           {items.map((entry) => (
             <li key={entry.chat.id}>
-              <ChatListItem
-                {...entry}
-                active={entry.chat.id === activeChatId}
-                onSelect={actions.selectChat}
-              />
+              <ChatListItem {...entry} to={chatPath(entry.chat.id)} />
             </li>
           ))}
         </ul>

@@ -1,22 +1,11 @@
-import { SessionProvider, useSession } from '@/entities/session';
-import { ChatsPage } from '@/pages/chats';
-import { LoginPage } from '@/pages/login';
-import { AuthorizedArea } from './AuthorizedArea';
-
-function Screen() {
-  const { credentials } = useSession();
-  if (!credentials) return <LoginPage />;
-  return (
-    <AuthorizedArea>
-      <ChatsPage />
-    </AuthorizedArea>
-  );
-}
+import { RouterProvider } from 'react-router/dom';
+import { SessionProvider } from '@/entities/session';
+import { router } from './router';
 
 export function App() {
   return (
     <SessionProvider>
-      <Screen />
+      <RouterProvider router={router} />
     </SessionProvider>
   );
 }

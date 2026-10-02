@@ -25,8 +25,7 @@ export function ChatStoreProvider({ instanceId, children }: ChatStoreProviderPro
 
   const actions = useMemo<ChatStoreActions>(
     () => ({
-      openChat: (chatId) => dispatch({ type: 'openChat', chatId }),
-      selectChat: (chatId) => dispatch({ type: 'selectChat', chatId }),
+      addChat: (chatId) => dispatch({ type: 'addChat', chatId }),
       receive: (message, senderName) => dispatch({ type: 'receive', message, senderName }),
       sendStart: (message) => dispatch({ type: 'sendStart', message }),
       sendSuccess: (chatId, localId, idMessage) =>
