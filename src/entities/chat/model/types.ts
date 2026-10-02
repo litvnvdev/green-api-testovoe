@@ -1,15 +1,5 @@
-import type { ChatMessage } from '@/entities/message/@x/chat';
+import type { z } from 'zod';
+import type { chatDataSchema, chatSchema } from './schema';
 
-export interface Chat {
-  /** chatId WhatsApp, например 79001234567@c.us. */
-  id: string;
-  /** Имя из WhatsApp, если пришло во входящем сообщении. */
-  name?: string;
-  createdAt: number;
-}
-
-/** Всё, что хранится по одному инстансу: список чатов и история по chatId. */
-export interface ChatData {
-  chats: Chat[];
-  messages: Record<string, ChatMessage[]>;
-}
+export type Chat = z.infer<typeof chatSchema>;
+export type ChatData = z.output<typeof chatDataSchema>;

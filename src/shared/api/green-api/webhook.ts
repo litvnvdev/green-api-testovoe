@@ -1,66 +1,27 @@
-import type { MessageData, MessageWebhook, TextMessageEvent, WebhookBody } from './types';
-
-const MESSAGE_WEBHOOKS: ReadonlySet<string> = new Set([
-  'incomingMessageReceived',
-  'outgoingMessageReceived',
-  'outgoingAPIMessageReceived',
-]);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isMessageWebhook(body: WebhookBody): body is MessageWebhook {
-  return (
-    MESSAGE_WEBHOOKS.has(body.typeWebhook) &&
-    typeof body.idMessage === 'string' &&
-    typeof body.timestamp === 'number' &&
-    isRecord(body.senderData) &&
-    typeof body.senderData.chatId === 'string' &&
-    isRecord(body.messageData)
-  );
-}
-
-/** Достаёт текст из messageData или null, если сообщение не текстовое. */
-export function extractText(data: MessageData): string | null {
-  if (data.typeMessage === 'textMessage' && 'textMessageData' in data) {
-    return data.textMessageData.textMessage;
-  }
-  if (
-    (data.typeMessage === 'extendedTextMessage' || data.typeMessage === 'quotedMessage') &&
-    'extendedTextMessageData' in data
-  ) {
-    return data.extendedTextMessageData.text;
-  }
-  return null;
-}
+import { textMessageWebhookSchema } from './schemas';
+import type { TextMessageEvent, WebhookBody } from './types';
 
 /**
  * Превращает тело уведомления в текстовое событие.
- * Возвращает null для всего, что мы не показываем: статусы, группы, медиа и т.п.
+ * Возвращает null для всего, что мы не показываем: статусы, группы, медиа, пустой текст.
  */
 export function parseWebhook(body: WebhookBody): TextMessageEvent | null {
-  if (!isMessageWebhook(body)) return null;
+  const parsed = textMessageWebhookSchema.safeParse(body);
+  if (!parsed.success) return null;
 
-  const { chatId } = body.senderData;
-  // Только личные чаты: группы (@g.us) вне объёма задания.
-  if (!chatId.endsWith('@c.us')) return null;
+  const { typeWebhook, idMessage, timestamp, senderData, messageData: text } = parsed.data;
+  if (text.trim() === '') return null;
 
-  const text = extractText(body.messageData);
-  if (text === null || text.trim() === '') return null;
-
-  const direction = body.typeWebhook === 'incomingMessageReceived' ? 'in' : 'out';
-  const senderName =
-    direction === 'in'
-      ? body.senderData.senderContactName || body.senderData.senderName || undefined
-      : undefined;
-
+  const direction = typeWebhook === 'incomingMessageReceived' ? 'in' : 'out';
   return {
-    id: body.idMessage,
-    chatId,
+    id: idMessage,
+    chatId: senderData.chatId,
     text,
-    timestamp: body.timestamp * 1000,
+    timestamp: timestamp * 1000,
     direction,
-    senderName,
+    senderName:
+      direction === 'in'
+        ? senderData.senderContactName || senderData.senderName || undefined
+        : undefined,
   };
 }

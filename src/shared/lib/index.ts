@@ -4,6 +4,7 @@ export {
   MIN_PHONE_DIGITS,
   formatChatId,
   normalizePhone,
+  phoneSchema,
   toChatId,
   validatePhone,
   type PhoneValidation,
