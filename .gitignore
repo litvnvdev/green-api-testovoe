@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local tooling
-.claude
+# Local tooling: в репозиторий попадает только .claude/CLAUDE.md
+.claude/*
+!.claude/CLAUDE.md
