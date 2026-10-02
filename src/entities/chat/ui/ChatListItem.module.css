@@ -8,6 +8,8 @@
   border-radius: var(--radius-m);
   background: transparent;
   text-align: left;
+  color: inherit;
+  text-decoration: none;
   transition: background 0.15s;
 }
 
@@ -15,7 +17,7 @@
   background: var(--bg-hover);
 }
 
-.item[data-active='true'] {
+.item[aria-current='page'] {
   background: var(--bg-active);
 }
 

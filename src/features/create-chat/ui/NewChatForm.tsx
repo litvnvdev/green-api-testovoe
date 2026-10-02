@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router';
 import { useChatActions } from '@/entities/chat';
+import { chatPath } from '@/shared/config';
 import { toChatId, validatePhone } from '@/shared/lib';
 import { CloseIcon } from '@/shared/ui';
 import styles from './NewChatForm.module.css';
@@ -9,7 +11,8 @@ interface NewChatFormProps {
 }
 
 export function NewChatForm({ onDone }: NewChatFormProps) {
-  const { openChat } = useChatActions();
+  const { addChat } = useChatActions();
+  const navigate = useNavigate();
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +24,9 @@ export function NewChatForm({ onDone }: NewChatFormProps) {
       return;
     }
     // Если чат с этим номером уже есть — просто откроется он.
-    openChat(toChatId(result.digits));
+    const chatId = toChatId(result.digits);
+    addChat(chatId);
+    navigate(chatPath(chatId));
     onDone();
   }
 

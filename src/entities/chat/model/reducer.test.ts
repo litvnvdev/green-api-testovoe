@@ -68,6 +68,14 @@ describe('chatReducer', () => {
     expect(state.data.messages[chatId]?.map((m) => m.id)).toEqual(['REAL']);
   });
 
+  it('addChat добавляет чат один раз', () => {
+    let state = createInitialState(emptyData);
+    state = chatReducer(state, { type: 'addChat', chatId });
+    const again = chatReducer(state, { type: 'addChat', chatId });
+    expect(again).toBe(state);
+    expect(state.data.chats.map((c) => c.id)).toEqual([chatId]);
+  });
+
   it('сообщения упорядочены по времени', () => {
     let state = createInitialState(emptyData);
     state = chatReducer(state, { type: 'receive', message: msg({ id: 'b', timestamp: 2000 }) });
@@ -86,14 +94,12 @@ describe('chatReducer', () => {
     expect(state.data.chats.map((c) => c.id)).toEqual([chatId, other]);
   });
 
-  it('deleteChat убирает чат и его историю и закрывает его, если он открыт', () => {
+  it('deleteChat убирает чат и его историю', () => {
     const other = '79007654321@c.us';
     let state = createInitialState(emptyData);
     state = chatReducer(state, { type: 'receive', message: msg({}) });
     state = chatReducer(state, { type: 'receive', message: msg({ id: 'x', chatId: other }) });
-    state = chatReducer(state, { type: 'selectChat', chatId });
     state = chatReducer(state, { type: 'deleteChat', chatId });
-    expect(state.activeChatId).toBeNull();
     expect(state.data.chats.map((c) => c.id)).toEqual([other]);
     expect(Object.keys(state.data.messages)).toEqual([other]);
   });

@@ -3,9 +3,8 @@ import type { ChatMessage } from '@/entities/message/@x/chat';
 import type { ChatState } from './reducer';
 
 export interface ChatStoreActions {
-  /** Создаёт чат, если его нет, и делает активным. */
-  openChat: (chatId: string) => void;
-  selectChat: (chatId: string | null) => void;
+  /** Создаёт чат, если его ещё нет. Открывается он переходом на /chat/:phone. */
+  addChat: (chatId: string) => void;
   /** Новое сообщение из вебхука; создаёт чат, если его нет. */
   receive: (message: ChatMessage, senderName?: string) => void;
   sendStart: (message: ChatMessage) => void;
