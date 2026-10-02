@@ -50,6 +50,9 @@ export const instanceSettingsSchema = z.object({
   outgoingAPIMessageWebhook: z.string().optional(),
 });
 
+/** Максимальная длина текста в sendMessage. */
+export const MAX_MESSAGE_LENGTH = 20_000;
+
 export const sendMessageResponseSchema = z.object({ idMessage: z.string() });
 
 export const deleteNotificationResponseSchema = z.object({ result: z.boolean() });

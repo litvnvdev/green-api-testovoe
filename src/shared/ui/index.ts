@@ -1,5 +1,6 @@
 export { Avatar } from './Avatar';
 export { IconButton } from './IconButton';
+export { TextField } from './TextField';
 export {
   AlertIcon,
   BackIcon,

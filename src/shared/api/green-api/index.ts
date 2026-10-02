@@ -10,7 +10,12 @@ export {
 } from './client';
 export { settingsWarnings } from './settings';
 export { parseWebhook } from './webhook';
-export { credentialsSchema, messageDirectionSchema, textMessageEventSchema } from './schemas';
+export {
+  MAX_MESSAGE_LENGTH,
+  credentialsSchema,
+  messageDirectionSchema,
+  textMessageEventSchema,
+} from './schemas';
 export type {
   Credentials,
   CredentialsInput,

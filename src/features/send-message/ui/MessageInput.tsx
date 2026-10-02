@@ -1,9 +1,12 @@
-import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useLayoutEffect, useState, type KeyboardEvent } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { MAX_MESSAGE_LENGTH } from '@/shared/api';
+import { fitTextareaHeight } from '@/shared/lib';
 import { SendIcon } from '@/shared/ui';
+import { messageFormSchema } from '../model/schema';
 import styles from './MessageInput.module.css';
 
-/** Лимит sendMessage в GREEN-API. */
-const MAX_LENGTH = 20_000;
 const MAX_HEIGHT = 160;
 
 interface MessageInputProps {
@@ -11,57 +14,55 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onSend }: MessageInputProps) {
-  const [text, setText] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const canSend = text.trim().length > 0;
+  const { register, handleSubmit, reset, setFocus, control } = useForm({
+    resolver: zodResolver(messageFormSchema),
+    defaultValues: { text: '' },
+  });
+  const text = useWatch({ control, name: 'text' });
+  const canSend = messageFormSchema.safeParse({ text }).success;
 
-  // Авто-высота textarea по содержимому.
+  // register отдаёт свой ref; сам элемент храним в state — он нужен эффекту авто-высоты.
+  const { ref: registerRef, ...field } = register('text');
+  const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>(null);
+
+  // Авто-высота textarea по содержимому (в том числе сброс после отправки).
   useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_HEIGHT)}px`;
-    // Полоса прокрутки нужна, только когда текст выше максимальной высоты.
-    textarea.style.overflowY = textarea.scrollHeight > MAX_HEIGHT ? 'auto' : 'hidden';
-  }, [text]);
+    if (textarea) fitTextareaHeight(textarea, MAX_HEIGHT);
+  }, [textarea, text]);
 
-  function submit() {
-    const message = text.trim();
-    if (!message) return;
+  // Схема уже обрезала пробелы по краям.
+  const submit = handleSubmit(({ text: message }) => {
     onSend(message);
-    setText('');
-    textareaRef.current?.focus();
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    submit();
-  }
+    reset();
+    setFocus('text');
+  });
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     // Enter — отправить, Shift+Enter — перенос. Во время набора через IME Enter не трогаем.
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
-      submit();
+      void submit();
     }
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={submit}>
       <label htmlFor="message-input" className="visually-hidden">
         Сообщение
       </label>
       <textarea
         id="message-input"
-        ref={textareaRef}
         className={styles.textarea}
         rows={1}
-        maxLength={MAX_LENGTH}
+        maxLength={MAX_MESSAGE_LENGTH}
         placeholder="Сообщение"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
         autoFocus
+        {...field}
+        ref={(element) => {
+          registerRef(element);
+          setTextarea(element);
+        }}
       />
       <button
         type="submit"

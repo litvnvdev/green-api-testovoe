@@ -1,9 +1,11 @@
-import { useState, type FormEvent } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { useChatActions } from '@/entities/chat';
 import { chatPath } from '@/shared/config';
-import { toChatId, validatePhone } from '@/shared/lib';
+import { toChatId } from '@/shared/lib';
 import { CloseIcon } from '@/shared/ui';
+import { newChatSchema } from '../model/schema';
 import styles from './NewChatForm.module.css';
 
 interface NewChatFormProps {
@@ -13,25 +15,24 @@ interface NewChatFormProps {
 export function NewChatForm({ onDone }: NewChatFormProps) {
   const { addChat } = useChatActions();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(newChatSchema), defaultValues: { phone: '' } });
+  const error = errors.phone?.message;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const result = validatePhone(phone);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
+  // phone уже нормализован схемой: только цифры, 8XXXXXXXXXX → 7XXXXXXXXXX.
+  function onSubmit({ phone }: { phone: string }) {
     // Если чат с этим номером уже есть — просто откроется он.
-    const chatId = toChatId(result.digits);
+    const chatId = toChatId(phone);
     addChat(chatId);
     navigate(chatPath(chatId));
     onDone();
   }
 
   return (
-    <form id="new-chat-form" className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form id="new-chat-form" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <label htmlFor="new-chat-phone" className={styles.label}>
         Номер телефона получателя
       </label>
@@ -43,17 +44,13 @@ export function NewChatForm({ onDone }: NewChatFormProps) {
           inputMode="tel"
           autoComplete="tel"
           placeholder="+7 900 123-45-67"
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            setError(null);
-          }}
           onKeyDown={(e) => {
             if (e.key === 'Escape') onDone();
           }}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? 'new-chat-error' : 'new-chat-hint'}
+          aria-describedby="new-chat-message"
           autoFocus
+          {...register('phone')}
         />
         <button type="submit" className={styles.submit}>
           Создать
@@ -68,15 +65,13 @@ export function NewChatForm({ onDone }: NewChatFormProps) {
           <CloseIcon width={20} height={20} />
         </button>
       </div>
-      {error ? (
-        <p id="new-chat-error" className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : (
-        <p id="new-chat-hint" className={styles.hint}>
-          С кодом страны. Российский номер можно начинать с 8.
-        </p>
-      )}
+      <p
+        id="new-chat-message"
+        className={error ? styles.error : styles.hint}
+        role={error ? 'alert' : undefined}
+      >
+        {error ?? 'С кодом страны. Российский номер можно начинать с 8.'}
+      </p>
     </form>
   );
 }
